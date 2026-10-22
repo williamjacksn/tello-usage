@@ -1,0 +1,33 @@
+[project]
+name = "tello-usage"
+version = "2026.0"
+description = "Retrieve data balances and billing cycle information for every line in a Tello Mobile account."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+dependencies = [
+    "beautifulsoup4>=4.15.0",
+    "httpx2>=2.15.1",
+]
+
+[[project.authors]]
+name = "William Jackson"
+email = "william@subtlecoolness.com"
+
+[project.scripts]
+tello-usage = "tello_usage:main"
+
+[build-system]
+requires = ["uv_build>=0.13.1,<0.14.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.17.1",
+    "ty>=0.0.90",
+    "uv-build>=0.13.5",
+]
+
+[tool.ruff.lint]
+extend-select = ["ANN", "DTZ", "E", "F", "FURB", "I", "ICN", "PERF", "Q", "RSE", "RUF", "S", "UP"]
