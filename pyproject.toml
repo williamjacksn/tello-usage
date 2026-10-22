@@ -1,6 +1,6 @@
 [project]
 name = "tello-usage"
-version = "2026.0"
+version = "2026.1"
 description = "Retrieve data balances and billing cycle information for every line in a Tello Mobile account."
 readme = "README.md"
 license = "MIT"

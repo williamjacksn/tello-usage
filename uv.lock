@@ -882,7 +882,7 @@ wheels = [
 
 [[package]]
 name = "tello-usage"
-version = "2026.0"
+version = "2026.1"
 source = { editable = "." }
 dependencies = [
     { name = "beautifulsoup4" },
