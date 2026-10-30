@@ -7,6 +7,7 @@ from types import TracebackType
 from typing import Self
 from urllib.parse import urljoin, urlsplit
 
+import certifi
 import httpx2
 from bs4 import BeautifulSoup, Tag
 
@@ -185,6 +186,7 @@ class TelloClient:
             headers={"User-Agent": f"tello-usage/{_version}"},
             event_hooks={"request": [self._check_origin]},
             transport=transport,
+            verify=certifi.where(),
         )
 
     @staticmethod
