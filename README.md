@@ -97,6 +97,25 @@ with `--username`. The command exits with an error if credentials are missing an
 
 There is no password command-line argument. The package does not load `.env` files automatically.
 
+### Reusing sessions
+
+Use `--cookie-file` to save the login session and reuse it on later runs:
+
+```sh
+tello-usage --cookie-file ~/.cache/tello-usage/cookies.json
+```
+
+You can also set the `TELLO_COOKIE_FILE` environment variable. The `--cookie-file` argument takes precedence. Cookies are
+saved only when you choose a file.
+
+If the saved session is still valid, the command skips the login and does not ask for a password. If the session has
+expired or belongs to a different `--username`, the command uses the usual credentials, logs in, and replaces the file.
+The file is written only after balances are retrieved successfully. If it cannot be written, the command prints a
+warning and still shows the balances.
+
+The cookie file can be used to access your Tello Mobile account. Protect it like a password. Where the operating system
+supports it, the file is readable only by the user who created it.
+
 ## Python usage
 
 Use `TelloClient` in a `with` statement so its HTTP connections are closed after use:
@@ -130,6 +149,39 @@ The default HTTP timeout is 30 seconds. You can override it when creating the cl
 with TelloClient(timeout=60) as client:
     balances = client.balances(username, password)
 ```
+
+### Reusing sessions
+
+Pass `cookie_file` to load a saved session and save it again after each successful call:
+
+```python
+from tello_usage import TelloClient, TelloLoginRequired
+
+with TelloClient(cookie_file="~/.cache/tello-usage/cookies.json") as client:
+    try:
+        balances = client.balances()  # Reuses the saved session.
+    except TelloLoginRequired:
+        balances = client.balances(username, password)  # Logs in and saves.
+```
+
+The username and password are optional for `balances()`:
+
+- If a logged-in session exists and belongs to `username`, the client reuses it. When no username is given, any saved
+  session is reused. Usernames are compared without regard to case.
+- Otherwise, the client logs in with the credentials. An expired session is discarded first.
+- If a login is needed and the credentials are missing, the client raises `TelloLoginRequired`, a subclass of
+  `TelloError`.
+
+Passing credentials every time also works. The client then logs in only when the saved session is no longer valid.
+
+If the cookie file cannot be written, `balances()` issues a `RuntimeWarning` and still returns the balances. A missing,
+unreadable, or unrecognized cookie file is ignored.
+
+To store sessions somewhere else, call the methods directly:
+
+- `load_cookies(path)` replaces the client's cookies with a saved session. It returns `False` if the file cannot be used.
+- `save_cookies(path)` saves the current logged-in session. It raises `TelloLoginRequired` if there is no session. The
+  file is written atomically, and only Tello Mobile cookies and the account username are saved.
 
 ### Balance values
 
@@ -195,7 +247,8 @@ settings.
 Changes to Tello Mobile's website, a CAPTCHA, or an additional account verification step may prevent the client from
 working.
 
-Credentials and session cookies are held in memory and are not saved by the package. No HAR recording is required.
+Credentials are held in memory and are never saved by the package. Session cookies are saved only when you choose a
+cookie file, as described in [Reusing sessions](#reusing-sessions).
 
 ## Development
 

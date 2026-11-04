@@ -8,7 +8,7 @@ from urllib.parse import parse_qs
 
 import httpx2
 
-from tello_usage import Balance, TelloClient, TelloError
+from tello_usage import Balance, TelloClient, TelloError, TelloLoginRequired
 
 
 def fields(token: str) -> str:
@@ -224,6 +224,14 @@ class ClientTests(unittest.TestCase):
         ):
             client.balances("test@example.invalid", "fake")
         self.assertEqual(calls, ["tello.com"])
+
+    def test_balances_without_credentials_or_session(self) -> None:
+        transport = httpx2.MockTransport(lambda request: httpx2.Response(500))
+        with (
+            TelloClient(transport=transport) as client,
+            self.assertRaises(TelloLoginRequired),
+        ):
+            client.balances()
 
     def test_zero_balance(self) -> None:
         from tello_usage.client import _account_page, _balance
